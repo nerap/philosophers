@@ -14,7 +14,6 @@
 # define FT_PHILO_ONE_H
 
 # include "../srcs/ft_printf/includes/ft_printf.h"
-# include <libc.h>
 # include <stdlib.h>
 # include <unistd.h>
 # include <pthread.h>
@@ -37,7 +36,6 @@ typedef struct		s_philo_one
 t_philo_one			*g_all;
 int					g_still_eating;
 pthread_mutex_t		*g_chops;
-pthread_mutex_t		*g_end;
 
 long				ft_atol(const char *str);
 void				mutex_destroy(long number);

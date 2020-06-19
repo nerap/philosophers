@@ -38,7 +38,6 @@ void		*check_death(t_philo_one *phil)
 {
 	if (phil->after.tv_usec - phil->before.tv_usec >= phil->time_to_die)
 	{
-//		pthread_mutex_lock(g_end);
 		g_still_eating = 0;
 		display("died", phil);
 		end();
@@ -58,31 +57,31 @@ t_philo_one	*rotate(t_philo_one *phil)
 {
 	struct timeval	time;
 
-//	if (pthread_mutex_lock(g_end) != 0)
-//	{
-		display("is eating", phil);
-		usleep(phil->time_to_eat);
-//	}
+	
+	if (g_still_eating <= 0)
+		return NULL;
+	display("is eating", phil);
+	usleep(phil->time_to_eat);
 	gettimeofday(&(phil->before), NULL);
 	if (phil->is_time && --phil->number_of_time == 0)
+	{
 		if (--g_still_eating <= 0)
 		{
-//			pthread_mutex_lock(g_end);
 			g_still_eating = 0;
 			mutex_destroy(g_all[0].number_of_philosopher);
-    		free(g_all);
+    			free(g_all);
 		}
-//	if (pthread_mutex_lock(g_end) != 0)
-//	{
-		drop_chopsticks(phil);
-		display("is sleeping", phil);
-		usleep(phil->time_to_sleep);
+		drop_chopsticks(phil);	
+		if (g_still_eating > 0)
+		{
+			display("is sleeping", phil);
+			usleep(phil->time_to_sleep);
+		}
+		else
+			return NULL;
 		gettimeofday(&(phil->after), NULL);
-//	}
-//	if (pthread_mutex_lock(g_end) != 0)
-//	{
 		check_death(phil);
 		display("is thinking", phil);
-//	}
+	}
 	return (phil);
 }

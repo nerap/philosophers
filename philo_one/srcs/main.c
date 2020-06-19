@@ -30,12 +30,7 @@ int			grab_chopsticks(t_philo_one *phil)
 
 	left_chops = phil->id - 1;
 	right_chops = (phil->id) % phil->number_of_philosopher;
-	if (g_chops == NULL)
-		return (-1);
 	if (g_still_eating > 0 && pthread_mutex_lock(&g_chops[left_chops]) == 0)
-	{
-		if (g_chops == NULL)
-			return (-1);
 		if (g_still_eating > 0 &&
 				pthread_mutex_lock(&g_chops[right_chops]) == 0)
 		{
