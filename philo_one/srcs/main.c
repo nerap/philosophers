@@ -6,7 +6,7 @@
 /*   By: racohen <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/24 22:39:51 by racohen           #+#    #+#             */
-/*   Updated: 2020/06/17 10:34:45 by racohen          ###   ########.fr       */
+/*   Updated: 2020/07/02 10:35:39 by racohen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,12 @@ int			grab_chopsticks(t_philo_one *phil)
 
 	left_chops = phil->id - 1;
 	right_chops = (phil->id) % phil->number_of_philosopher;
+	if (g_chops == NULL)
+		return (-1);
 	if (g_still_eating > 0 && pthread_mutex_lock(&g_chops[left_chops]) == 0)
+	{
+		if (g_chops == NULL)
+			return (-1);
 		if (g_still_eating > 0 &&
 				pthread_mutex_lock(&g_chops[right_chops]) == 0)
 		{
@@ -60,14 +65,11 @@ void		*thread_run(void *philo_one)
 	{
 		gettimeofday(&(phil->after), NULL);
 		check_death(phil);
-		if (phil->is_time && phil->number_of_time <= 0)
-		{
-			pthread_detach(phil->phil);
-			return (NULL);
-		}
-		else if (g_still_eating >= 0 && grab_chopsticks(phil) == 0)
+		if ((phil->is_time && phil->number_of_time <= 0) || g_still_eating <= 0)
+			break;
+		else if (g_still_eating > 0 && grab_chopsticks(phil) == 0)
 			if ((phil = rotate(phil)) == NULL)
-				return (NULL);
+				break;
 	}
 	return (NULL);
 }

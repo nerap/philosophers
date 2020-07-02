@@ -6,7 +6,7 @@
 /*   By: racohen <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/24 22:35:59 by racohen           #+#    #+#             */
-/*   Updated: 2020/06/17 10:32:17 by racohen          ###   ########.fr       */
+/*   Updated: 2020/07/02 09:31:42 by racohen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define FT_PHILO_ONE_H
 
 # include "../srcs/ft_printf/includes/ft_printf.h"
+# include <libc.h>
 # include <stdlib.h>
 # include <unistd.h>
 # include <pthread.h>
