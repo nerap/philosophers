@@ -39,12 +39,15 @@ pthread_mutex_t		*g_chops;
 
 long				ft_atol(const char *str);
 void				mutex_destroy(long number);
+int					check_param(int ac, char *const av[]);
 void				*end();
+void				*check_alive(int nb);
 void				display(const char *str, t_philo_one *phil);
 t_philo_one			*rotate(t_philo_one *phil);
 void				drop_chopsticks(t_philo_one *phil);
-int				is_alpha(const char *str);
-char				*ft_strjoinfreeboth(char *s1, char *s2, int lens1, int lens2);
+int					is_alpha(const char *str);
+char				*ft_strjoinfreeboth(char *s1, char *s2,
+				int lens1, int lens2);
 char				*ft_strdup(const char *src);
 void				*check_death(t_philo_one *phil);
 char				*ft_itoa(int n);
