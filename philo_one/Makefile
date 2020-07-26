@@ -18,11 +18,7 @@ SAN = -fsanitize=address
 
 NAME = philo_one
 
-LIB_PRINTF = ftprintf
-
-LIB_PATH = srcs/ft_printf/
-
-LIB_COMPIL = -L$(LIB_PATH) -l$(LIB_PRINTF)
+LIB_COMPIL = -lpthread
 
 SRCS_DIR = srcs/
 
@@ -30,6 +26,10 @@ INCS_DIR = includes/
 
 SRCS_LIST = main.c\
 			ft_atol.c\
+			ft_strdup.c\
+			ft_strjoinfreeboth.c\
+			ft_strlen.c\
+			ft_itoa.c\
 			phil_utils.c\
 
 SRCS =  $(addprefix $(SRCS_DIR), $(SRCS_LIST))
@@ -44,7 +44,7 @@ all : $(NAME)
 	${CC} -c -I $(INCS_DIR) $< -o ${<:.c=.o}
 
 $(NAME): $(OBJECT) $(INCS_DIR)
-	$(CC) $(FLAGS) $(LIB_COMPIL) $(OBJECT) -o $(NAME)
+	$(CC) $(FLAGS) $(OBJECT) -o $(NAME) $(LIB_COMPIL)
 
 clean:
 	@rm -rf $(OBJECT)

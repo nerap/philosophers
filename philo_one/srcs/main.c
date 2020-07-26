@@ -32,26 +32,19 @@ int			grab_chopsticks(t_philo_one *phil)
 	right_chops = (phil->id) % phil->number_of_philosopher;
 	if (g_chops == NULL)
 		return (-1);
-	if (g_still_eating > 0 && pthread_mutex_lock(&g_chops[left_chops]) == 0)
-	{
-		if (g_chops == NULL)
-			return (-1);
-		if (g_still_eating > 0 &&
-				pthread_mutex_lock(&g_chops[right_chops]) == 0)
-		{
-			if (g_still_eating > 0)
-				display("has taken fork", phil);
-			else
-			{
-				drop_chopsticks(phil);
-				return (-1);
-			}
-			return (0);
-		}
-		else
-			pthread_mutex_unlock(&g_chops[left_chops]);
-	}
-	return (-1);
+	pthread_mutex_lock(&g_chops[left_chops]);
+	if (g_still_eating > 0)
+		display("has taken fork", phil);
+	else
+		return (-1);
+	if (g_chops == NULL)
+		return (-1);
+	pthread_mutex_lock(&g_chops[right_chops]);
+	if (g_still_eating > 0)
+		display("has taken fork", phil);
+	else
+		return (-1);
+	return (0);
 }
 
 void		*thread_run(void *philo_one)
@@ -61,15 +54,20 @@ void		*thread_run(void *philo_one)
 
 	phil = (t_philo_one*)philo_one;
 	gettimeofday(&(phil->before), NULL);
+	gettimeofday(&(phil->after), NULL);
 	while (1)
 	{
-		gettimeofday(&(phil->after), NULL);
-		check_death(phil);
+		//gettimeofday(&(phil->after), NULL);
+		//check_death(phil);
 		if ((phil->is_time && phil->number_of_time <= 0) || g_still_eating <= 0)
 			break;
 		else if (g_still_eating > 0 && grab_chopsticks(phil) == 0)
+		{
 			if ((phil = rotate(phil)) == NULL)
 				break;
+		}
+		else
+			break;
 	}
 	return (NULL);
 }
@@ -84,7 +82,7 @@ t_philo_one	*init(int ac, char *const av[])
 	g_still_eating = nb_phil;
 	if ((g_all = malloc(sizeof(t_philo_one) * nb_phil)) == NULL)
 		return (NULL);
-	if ((g_chops = malloc(sizeof(pthread_mutex_t) * (nb_phil + 1))) == NULL)
+	if ((g_chops = malloc(sizeof(pthread_mutex_t) * (nb_phil))) == NULL)
 		return (NULL);
 	while (++i < nb_phil)
 	{
@@ -93,6 +91,8 @@ t_philo_one	*init(int ac, char *const av[])
 		g_all[i].time_to_die = ft_atol(av[2]);
 		g_all[i].time_to_eat = ft_atol(av[3]);
 		g_all[i].time_to_sleep = ft_atol(av[4]);
+		gettimeofday(&(g_all[i].before), NULL);
+		gettimeofday(&(g_all[i].after), NULL);
 		if (ac > 5)
 		{
 			g_all[i].number_of_time = ft_atol(av[5]);
@@ -107,15 +107,29 @@ t_philo_one	*init(int ac, char *const av[])
 int			main(int ac, char *const av[])
 {
 	int			i;
+	int			nb;
 
+	i = 1;
+	if (ac < 5 || ac > 6)
+	{
+		write(1, "Wrong number of arguments\n", 26);
+		return (0);
+	}
+	while (i < ac)
+	 	if (is_alpha(av[i++]) == 0)
+		{
+			write(1, "Non numeric parameters\n", 23);
+			return (0);
+		}
 	i = 0;
 	if ((g_all = init(ac, av)) == NULL)
 		return (0);
-	while (i < g_all[i].number_of_philosopher)
+	nb = g_all[i].number_of_philosopher;
+	while (i < nb)
 		if (pthread_mutex_init(&g_chops[i++], NULL) == -1)
 			return (-1);
 	i = 0;
-	while (i < g_all[i].number_of_philosopher)
+	while (i < nb)
 	{
 		if (pthread_create(&g_all[i].phil, NULL, thread_run, &g_all[i]))
 			return (-1);
@@ -123,7 +137,14 @@ int			main(int ac, char *const av[])
 	}
 	while (g_still_eating > 0)
 	{
-		(void)(ac);
+		usleep(1);
+		i = -1;
+		while (++i < nb)
+		{
+			if (check_death(&g_all[i]) == NULL)
+				break;
+			gettimeofday(&(g_all[i].after), NULL);
+		}
 	}
 	return (0);
 }

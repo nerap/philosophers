@@ -36,8 +36,13 @@ void		*end()
 
 void		*check_death(t_philo_one *phil)
 {
-	if (phil->after.tv_usec - phil->before.tv_usec >= phil->time_to_die)
+	long long res;
+
+	res = ((phil->after.tv_usec / 1000) + (phil->after.tv_sec * 1000)) - ((phil->before.tv_usec / 1000) + (phil->before.tv_sec * 1000));
+	if (res >= phil->time_to_die)
 	{
+		if (g_still_eating <= 0)
+			return (NULL);
 		g_still_eating = 0;
 		display("died", phil);
 		end();
@@ -48,10 +53,19 @@ void		*check_death(t_philo_one *phil)
 
 void		display(const char *str, t_philo_one *phil)
 {
+	char		*tr;
+	char		*t;
 	struct timeval	time;
 
 	gettimeofday(&time, NULL);
-	ft_printf("%d %d %s\n", time.tv_usec / 1000, phil->id ,str);
+	t = ft_itoa(time.tv_usec / 1000);
+	tr = ft_strjoinfreeboth(t, ft_strdup(" "), ft_strlen(t), 1);
+	t = ft_itoa(phil->id);
+	tr = ft_strjoinfreeboth(tr, t, ft_strlen(tr), ft_strlen(t));
+	tr = ft_strjoinfreeboth(tr, ft_strdup(" "), ft_strlen(tr), 1);
+	tr = ft_strjoinfreeboth(tr, ft_strdup(str), ft_strlen(tr), ft_strlen(str));
+	tr = ft_strjoinfreeboth(tr, ft_strdup("\n"), ft_strlen(tr), 1);
+	write(1, tr, ft_strlen(tr));
 }
 
 t_philo_one	*rotate(t_philo_one *phil)
@@ -61,9 +75,9 @@ t_philo_one	*rotate(t_philo_one *phil)
 	if (g_still_eating > 0)
 	{
 		display("is eating", phil);
-		usleep(phil->time_to_eat);
+		usleep(phil->time_to_eat * 1000);
+		drop_chopsticks(phil);
 	}
-	gettimeofday(&(phil->before), NULL);
 	if (phil->is_time && --phil->number_of_time == 0)
 	{
 		if (--g_still_eating <= 0)
@@ -71,17 +85,17 @@ t_philo_one	*rotate(t_philo_one *phil)
 		else
 			return (NULL);
 	}
-	drop_chopsticks(phil);
 	if (g_still_eating > 0)
-		display("is sleeping", phil);
-	usleep(phil->time_to_sleep);
-	if (check_death(phil) == NULL)
+		display("is sleeping", phil);	
+	gettimeofday(&(phil->before), NULL);
+	usleep(phil->time_to_sleep * 1000);
+	if (g_still_eating > 0 && check_death(phil) == NULL)
 		return (NULL);
-	gettimeofday(&(phil->after), NULL);
+	//gettimeofday(&(phil->after), NULL);
 	if (g_still_eating > 0)
 	{
-		if (check_death(phil) == NULL)
-			return (NULL);
+	//	if (check_death(phil) == NULL)
+	//		return (NULL);
 		if (g_still_eating > 0)
 			display("is thinking", phil);
 	}

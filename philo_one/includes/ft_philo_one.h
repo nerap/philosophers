@@ -13,9 +13,8 @@
 #ifndef FT_PHILO_ONE_H
 # define FT_PHILO_ONE_H
 
-# include "../srcs/ft_printf/includes/ft_printf.h"
-# include <libc.h>
 # include <stdlib.h>
+# include <string.h>
 # include <unistd.h>
 # include <pthread.h>
 # include <sys/time.h>
@@ -44,6 +43,11 @@ void				*end();
 void				display(const char *str, t_philo_one *phil);
 t_philo_one			*rotate(t_philo_one *phil);
 void				drop_chopsticks(t_philo_one *phil);
+int				is_alpha(const char *str);
+char				*ft_strjoinfreeboth(char *s1, char *s2, int lens1, int lens2);
+char				*ft_strdup(const char *src);
 void				*check_death(t_philo_one *phil);
+char				*ft_itoa(int n);
+size_t				ft_strlen(const char *s);
 
 #endif

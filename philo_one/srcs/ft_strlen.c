@@ -1,23 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_freeall.c                                       :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: racohen <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/11/07 22:58:20 by racohen           #+#    #+#             */
-/*   Updated: 2019/11/11 18:50:46 by racohen          ###   ########.fr       */
+/*   Created: 2019/07/30 18:53:48 by racohen           #+#    #+#             */
+/*   Updated: 2019/11/08 10:23:21 by racohen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/ft_printf.h"
+#include "../includes/ft_philo_one.h"
 
-char	*ft_freeall(char *res, t_format *form, int crit)
+size_t	ft_strlen(const char *s)
 {
-	(void)crit;
-	if (crit && res != NULL)
-		free(res);
-	if (crit && form != NULL)
-		free(form);
-	return (NULL);
+	int	len;
+
+	len = 0;
+	while (*s)
+	{
+		len++;
+		s++;
+	}
+	return (len);
 }

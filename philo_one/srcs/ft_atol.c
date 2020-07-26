@@ -10,6 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+int		is_alpha(const char *str)
+{
+	int i;
+
+	i = -1;
+	while (str[++i])
+		if (str[i] < '0' || str[i] > '9')
+			return (0);
+	return (1);
+}
+
 static int	check_sign(const char *str, int i, int *is_neg)
 {
 	if (str[i] == '-' || str[i] == '+')
