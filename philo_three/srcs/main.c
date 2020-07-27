@@ -6,124 +6,123 @@
 /*   By: racohen <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/24 22:39:51 by racohen           #+#    #+#             */
-/*   Updated: 2019/11/25 10:48:05 by racohen          ###   ########.fr       */
+/*   Updated: 2020/07/02 10:35:39 by racohen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ft_philo_three.h"
 
-void		drop_chopsticks(void)
-{
-	sem_wait(g_sem.sem);
-	g_sem.value += 2;
-	sem_post(g_sem.sem);
-}
-
 int			grab_chopsticks(t_philo_three *phil)
 {
-	if (g_still_eating > 0)
-	{
-		if (g_sem.value > 1)
-		{
-			sem_wait(g_sem.sem);
-			g_sem.value -= 2;
-			sem_post(g_sem.sem);
-		}
-		else
-			return (-1);
-		if (g_still_eating > 0)
-			display("has taken fork", phil);
-		else
-		{
-			drop_chopsticks();
-			end(phil);
-			return (-1);
-		}
-		return (0);
-	}
-	end(phil);
-	return (-1);
+	sem_wait(g_sem_eat);
+	phil->is_eating = 1;
+	sem_wait(g_sem);
+	sem_wait(g_sem_write);
+	display("has taken fork", phil);
+	sem_post(g_sem_write);
+	sem_wait(g_sem);
+	sem_wait(g_sem_write);
+	display("has taken fork", phil);
+	sem_post(g_sem_write);
+	return (0);
 }
 
 void		*thread_run(void *philo_three)
 {
-	struct timeval	time;
-	t_philo_three	*phil;
+	struct timeval		time;
+	t_philo_three		*phil;
 
 	phil = (t_philo_three*)philo_three;
+	phil->is_eating = 0;
 	gettimeofday(&(phil->before), NULL);
-	while (g_still_eating > 0)
+	gettimeofday(&(phil->after), NULL);
+	while (1)
 	{
-		gettimeofday(&(phil->after), NULL);
-		if (!phil->is_time &&
-			phil->after.tv_usec - phil->before.tv_usec >= phil->time_to_die)
+		sem_wait(g_sem_done);
+		sem_post(g_sem_done);
+		if ((phil->is_time && phil->number_of_time <= 0))
+			break ;
+		else if (grab_chopsticks(phil) == 0)
 		{
-			display("died", phil);
-			return (end(phil));
-		}
-		if (phil->is_time && phil->number_of_time <= 0)
-		{
-			pthread_detach(phil->phil);
-			return (NULL);
-		}
-		else if (g_still_eating >= 0 && grab_chopsticks(phil) == 0)
 			if ((phil = rotate(phil)) == NULL)
-				return (NULL);
+				break ;
+		}
 	}
-	return (end(phil));
+	return (NULL);
 }
 
-t_philo_three	*init(t_philo_three *philo_three, int ac, char *const av[])
+void		init(int ac, char *const av[])
 {
-	int	nb_phil;
 	int	i;
 
 	i = -1;
-	nb_phil = ft_atol(av[1]);
-	if ((philo_three = malloc(sizeof(t_philo_three) * nb_phil)) == NULL)
-		return (NULL);
-	while (++i < nb_phil)
+	sem_unlink(SEM_NAME);
+	sem_unlink(SEM_DIE);
+	sem_unlink(SEM_WRITE);
+	sem_unlink(SEM_DONE);
+	g_all.number_of_philosopher = ft_atol(av[1]);
+	g_all.time_to_die = ft_atol(av[2]);
+	g_all.time_to_eat = ft_atol(av[3]);
+	g_all.time_to_sleep = ft_atol(av[4]);
+	gettimeofday(&(g_all.before), NULL);
+	gettimeofday(&(g_all.after), NULL);
+	g_all.is_time = 0;
+	if (ac > 5)
 	{
-		philo_three[i].id = i + 1;
-		philo_three[i].number_of_philosopher = nb_phil;
-		philo_three[i].time_to_die = ft_atol(av[2]);
-		philo_three[i].time_to_eat = ft_atol(av[3]);
-		philo_three[i].time_to_sleep = ft_atol(av[4]);
-		if (ac > 5 + nb_phil - 1)
-		{
-			philo_three[i].number_of_time = ft_atol(av[5 + i]);
-			philo_three[i].is_time = 1;
-		}
-		else
-			philo_three[i].is_time = 0;
+		g_all.number_of_time = ft_atol(av[5]);
+		g_all.is_time = 1;
 	}
-	return (philo_three);
+	return ;
 }
 
-int				main(int ac, char *const av[])
+int			init_sem(int ac, char *const av[])
 {
-	pid_t			id;
-	int				i;
-	t_philo_three	*philo_three;
-
-	i = 0;
-	if ((philo_three = init(philo_three, ac, av)) == NULL)
-		return (-1);
-	g_still_eating = philo_three[0].number_of_philosopher;
-	sem_unlink(SEM_NAME);
-	g_sem.value = g_still_eating;
-	if ((g_sem.sem = sem_open(SEM_NAME, O_CREAT, 0644, g_still_eating / 2))
+	if (!check_param(ac, av))
+		return (0);
+	if ((g_sem = sem_open(SEM_NAME, O_CREAT, 0644, ft_atol(av[1])))
 		== SEM_FAILED)
-		return (-1);
-	while (i < philo_three[i].number_of_philosopher)
+		return (0);
+	if ((g_sem_die = sem_open(SEM_DIE, O_CREAT, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_write = sem_open(SEM_WRITE, O_CREAT, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_done = sem_open(SEM_DONE, O_CREAT, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_eat = sem_open(SEM_EAT, O_CREAT, 0644, 2))
+		== SEM_FAILED)
+		return (0);
+	init(ac, av);
+	return (g_all.number_of_philosopher);
+}
+
+int			main(int ac, char *const av[])
+{
+	int			i;
+	int			nb;
+	pid_t		p;
+
+	i = -1;
+	if ((nb = init_sem(ac, av)) == 0)
+		return (0);
+	while (++i < nb)
 	{
-		if (pthread_create(&philo_three[i].phil, NULL, thread_run, &philo_three[i]))
+		g_all.id = i + 1;
+		p = fork();
+		if (p != 0)
+			continue ;
+		else if (pthread_create(&g_all.phil, NULL, thread_run, &g_all))
 			return (-1);
-		i++;
+		break ;
 	}
-	while (g_still_eating > 0)
-		(void)ac;
-	sem_close(g_sem.sem);
-	free(philo_three);
+	if (p != 0)
+		waitpid(-1, NULL, 0);
+	else
+		while (1)
+			check_alive(nb);
+	if (p != 0)
+		end();
 	return (0);
 }

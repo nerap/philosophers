@@ -5,25 +5,39 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: racohen <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/11/25 10:13:02 by racohen           #+#    #+#             */
-/*   Updated: 2019/11/25 10:13:13 by racohen          ###   ########.fr       */
+/*   Created: 2019/11/24 22:35:59 by racohen           #+#    #+#             */
+/*   Updated: 2020/07/02 09:31:42 by racohen          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_PHILO_THREE_H
 # define FT_PHILO_THREE_H
-
-# include "../srcs/ft_printf/includes/ft_printf.h"
-# include <libc.h>
+# define _GNU_SOURCE
 # include <stdlib.h>
+# include <string.h>
 # include <unistd.h>
+# include <semaphore.h>
 # include <pthread.h>
 # include <sys/time.h>
-# include <semaphore.h>
 # include <sys/wait.h>
+# include <signal.h>
+# include <fcntl.h>
 # ifndef SEM_NAME
-#  define SEM_NAME "/s"
+#  define SEM_NAME "SEM"
 # endif
+# ifndef SEM_DIE
+#  define SEM_DIE "DIE"
+# endif
+# ifndef SEM_WRITE
+#  define SEM_WRITE "WRITE"
+# endif
+# ifndef SEM_DONE
+#  define SEM_DONE "DONE"
+# endif
+# ifndef SEM_EAT
+#  define SEM_EAT "EAT"
+# endif
+
 
 typedef struct		s_philo_three
 {
@@ -34,24 +48,31 @@ typedef struct		s_philo_three
 	long			time_to_eat;
 	long			time_to_sleep;
 	long			number_of_time;
+	int				is_eating;
 	int				is_time;
 	struct timeval	before;
 	struct timeval	after;
 }					t_philo_three;
 
-typedef struct		s_sem
-{
-	int				value;
-	sem_t			*sem;
-}					t_sem;
-
-int					g_still_eating;
-t_sem				g_sem;
+t_philo_three		g_all;
+sem_t				*g_sem;
+sem_t				*g_sem_done;
+sem_t				*g_sem_die;
+sem_t				*g_sem_write;
+sem_t				*g_sem_eat;
 
 long				ft_atol(const char *str);
-void				*end(t_philo_three *phil);
+int					check_param(int ac, char *const av[]);
+void				end();
+void				check_alive(int nb);
 void				display(const char *str, t_philo_three *phil);
 t_philo_three		*rotate(t_philo_three *phil);
-void				drop_chopsticks();
+int					is_alpha(const char *str);
+char				*ft_strjoinfreeboth(char *s1, char *s2,
+				int lens1, int lens2);
+char				*ft_strdup(const char *src);
+void				*check_death(t_philo_three *phil);
+char				*ft_itoa(int n);
+size_t				ft_strlen(const char *s);
 
 #endif
