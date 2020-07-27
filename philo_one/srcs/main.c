@@ -30,6 +30,9 @@ int			grab_chopsticks(t_philo_one *phil)
 
 	left_chops = phil->id - 1;
 	right_chops = (phil->id) % phil->number_of_philosopher;
+	if (g_all[left_chops].is_eating || g_all[right_chops].is_eating)
+		return (-1);
+	phil->is_eating = 1;
 	if (g_chops == NULL)
 		return (-1);
 	pthread_mutex_lock(&g_chops[left_chops]);
@@ -53,6 +56,7 @@ void		*thread_run(void *philo_one)
 	t_philo_one		*phil;
 
 	phil = (t_philo_one*)philo_one;
+	phil->is_eating = 0;
 	gettimeofday(&(phil->before), NULL);
 	gettimeofday(&(phil->after), NULL);
 	while (1)
@@ -64,8 +68,6 @@ void		*thread_run(void *philo_one)
 			if ((phil = rotate(phil)) == NULL)
 				break ;
 		}
-		else
-			break ;
 	}
 	return (NULL);
 }
@@ -106,21 +108,18 @@ int			main(int ac, char *const av[])
 
 	if (!check_param(ac, av))
 		return (0);
-	i = 0;
+	i = -1;
 	if ((g_all = init(ac, av)) == NULL)
 		return (0);
-	nb = g_all[i].number_of_philosopher;
-	while (i < nb)
-		if (pthread_mutex_init(&g_chops[i++], NULL) == -1)
-			return (-1);
-	i = 0;
-	while (i < nb)
-	{
+	nb = g_all[0].number_of_philosopher;
+	while (++i < nb)
+		pthread_mutex_init(&g_chops[i], NULL);
+	i = -1;
+	while (++i < nb)
 		if (pthread_create(&g_all[i].phil, NULL, thread_run, &g_all[i]))
 			return (-1);
-		i++;
-	}
-	while (g_still_eating > 0)
+	usleep(1000);
+	while (1)
 		if (check_alive(nb) == NULL)
 			break ;
 	return (0);

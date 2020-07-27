@@ -12,7 +12,7 @@
 
 #ifndef FT_PHILO_ONE_H
 # define FT_PHILO_ONE_H
-
+# define _GNU_SOURCE
 # include <stdlib.h>
 # include <string.h>
 # include <unistd.h>
@@ -28,6 +28,7 @@ typedef struct		s_philo_one
 	long			time_to_eat;
 	long			time_to_sleep;
 	long			number_of_time;
+	int				is_eating;
 	int				is_time;
 	struct timeval	before;
 	struct timeval	after;

@@ -31,8 +31,12 @@ void		*check_alive(int nb)
 	i = -1;
 	while (++i < nb)
 	{
-		if (check_death(&g_all[i]) == NULL)
+		if (g_still_eating <= 0 ||
+			(g_all[i].is_eating == 0 && check_death(&g_all[i]) == NULL))
+		{
+			end();
 			return (NULL);
+		}
 		gettimeofday(&(g_all[i].after), NULL);
 	}
 	return (&g_all[0]);

@@ -58,7 +58,6 @@ void		*check_death(t_philo_one *phil)
 			return (NULL);
 		g_still_eating = 0;
 		display("died", phil);
-		end();
 		return (NULL);
 	}
 	return ((void*)phil);
@@ -89,22 +88,19 @@ t_philo_one	*rotate(t_philo_one *phil)
 	if (g_still_eating > 0)
 	{
 		display("is eating", phil);
+		gettimeofday(&(phil->before), NULL);
 		usleep(phil->time_to_eat * 1000);
+		phil->is_eating = 0;
 		drop_chopsticks(phil);
 	}
 	if (phil->is_time && --phil->number_of_time == 0)
 	{
 		if (--g_still_eating <= 0)
-			return (end());
-		else
 			return (NULL);
 	}
 	if (g_still_eating > 0)
 		display("is sleeping", phil);
-	gettimeofday(&(phil->before), NULL);
 	usleep(phil->time_to_sleep * 1000);
-	if (g_still_eating > 0 && check_death(phil) == NULL)
-		return (NULL);
 	if (g_still_eating > 0)
 		if (g_still_eating > 0)
 			display("is thinking", phil);

@@ -18,7 +18,7 @@ SAN = -fsanitize=address
 
 NAME = philo_one
 
-LIB_COMPIL = -lpthread
+LIB_COMPIL = -pthread
 
 SRCS_DIR = srcs/
 
