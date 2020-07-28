@@ -38,7 +38,6 @@
 #  define SEM_EAT "EAT"
 # endif
 
-
 typedef struct		s_philo_three
 {
 	int				id;

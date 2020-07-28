@@ -60,6 +60,7 @@ void		init(int ac, char *const av[])
 	sem_unlink(SEM_DIE);
 	sem_unlink(SEM_WRITE);
 	sem_unlink(SEM_DONE);
+	sem_unlink(SEM_EAT);
 	g_all.number_of_philosopher = ft_atol(av[1]);
 	g_all.time_to_die = ft_atol(av[2]);
 	g_all.time_to_eat = ft_atol(av[3]);
@@ -79,22 +80,23 @@ int			init_sem(int ac, char *const av[])
 {
 	if (!check_param(ac, av))
 		return (0);
-	if ((g_sem = sem_open(SEM_NAME, O_CREAT, 0644, ft_atol(av[1])))
-		== SEM_FAILED)
-		return (0);
-	if ((g_sem_die = sem_open(SEM_DIE, O_CREAT, 0644, 1))
-		== SEM_FAILED)
-		return (0);
-	if ((g_sem_write = sem_open(SEM_WRITE, O_CREAT, 0644, 1))
-		== SEM_FAILED)
-		return (0);
-	if ((g_sem_done = sem_open(SEM_DONE, O_CREAT, 0644, 1))
-		== SEM_FAILED)
-		return (0);
-	if ((g_sem_eat = sem_open(SEM_EAT, O_CREAT, 0644, 2))
-		== SEM_FAILED)
-		return (0);
 	init(ac, av);
+	if ((g_sem = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0644, ft_atol(av[1])))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_die = sem_open(SEM_DIE, O_CREAT | O_EXCL, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_write = sem_open(SEM_WRITE, O_CREAT | O_EXCL, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_done = sem_open(SEM_DONE, O_CREAT | O_EXCL, 0644, 1))
+		== SEM_FAILED)
+		return (0);
+	if ((g_sem_eat = sem_open(SEM_EAT, O_CREAT | O_EXCL, 0644,
+		ft_atol(av[1]) / 2)) == SEM_FAILED)
+		return (0);
+	usleep(2000);
 	return (g_all.number_of_philosopher);
 }
 
